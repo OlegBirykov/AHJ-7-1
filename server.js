@@ -5,7 +5,7 @@ const server = http.createServer((req, res) => {
   res.end('I am server');
 });
 
-const port = 7070;
+const port = process.env.PORT || 7070;
 // слушаем определённый порт
 server.listen(port, (err) => {
   if (err) {
