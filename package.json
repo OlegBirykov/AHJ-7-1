@@ -26,6 +26,7 @@
   "homepage": "https://github.com/OlegBirykov/AHJ-7-1B#readme",
   "dependencies": {
     "forever": "^3.0.2",
+    "http": "0.0.1-security",
     "koa": "^2.13.0",
     "koa-body": "^4.2.0",
     "koa-static": "^5.0.0",
