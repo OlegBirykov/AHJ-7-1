@@ -13,7 +13,7 @@
   },
   "engines": {
     "node": "11.x"
-    },
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OlegBirykov/AHJ-7-1B.git"
