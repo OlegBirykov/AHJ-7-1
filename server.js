@@ -1,26 +1,4 @@
-const tickets = [
-  {
-    id: 1,
-    name: 'запись 1',
-    description: 'полное описание записи 1',
-    status: false,
-    created: 28364923649235,
-  },
-  {
-    id: 2,
-    name: 'запись 2',
-    description: 'полное описание записи 2',
-    status: true,
-    created: 36492366,
-  },
-  {
-    id: 3,
-    name: 'запись 3',
-    description: 'полное описание записи 3',
-    status: false,
-    created: 35356492366,
-  },
-];
+const tickets = [];
 
 const http = require('http');
 const Koa = require('koa');
