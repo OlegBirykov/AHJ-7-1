@@ -14,7 +14,7 @@ app.use(async (ctx, next) => {
   const origin = ctx.request.get('Origin');
 
   if (!origin) {
-    return await next();
+    return next();
   }
 
   const headers = { 'Access-Control-Allow-Origin': '*' };
@@ -22,7 +22,7 @@ app.use(async (ctx, next) => {
   if (ctx.request.method !== 'OPTIONS') {
     ctx.response.set({ ...headers });
     try {
-      return await next();
+      return next();
     } catch (e) {
       e.headers = { ...e.headers, ...headers };
       throw e;
@@ -40,17 +40,24 @@ app.use(async (ctx, next) => {
     ctx.response.status = 204;
   }
 
-  return await next();
+  return next();
 });
 
 app.use(async (ctx) => {
+  let params;
+  if (ctx.request.method === 'GET') {
+    params = ctx.request.query;
+  } else {
+    params = ctx.request.body;
+  }
+
   const {
     method,
     id: reqId,
     name: reqName,
     description: reqDescription,
     status: reqStatus,
-  } = ctx.request.query;
+  } = params;
 
   const fullToShort = () => JSON.stringify(tickets.map(
     ({
@@ -85,7 +92,7 @@ app.use(async (ctx) => {
     case 'createTicket':
       if (!reqId) {
         tickets.push({
-          id: tickets ? tickets[tickets.length - 1].id + 1 : 1,
+          id: tickets.length ? tickets[tickets.length - 1].id + 1 : 1,
           name: reqName,
           description: reqDescription,
           status: reqStatus,
