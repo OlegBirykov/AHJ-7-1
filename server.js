@@ -4,6 +4,14 @@ const http = require('http');
 const Koa = require('koa');
 const koaBody = require('koa-body');
 
+const fullToShort = () => JSON.stringify(tickets.map(
+  ({
+    id, name, status, created,
+  }) => ({
+    id, name, status, created,
+  }),
+));
+
 const app = new Koa();
 
 app.use(koaBody({
@@ -40,15 +48,48 @@ app.use(async (ctx, next) => {
     ctx.response.status = 204;
   }
 
-  return next();
+  return null;
 });
 
-app.use(async (ctx) => {
-  let params;
-  if (ctx.request.method === 'GET') {
-    params = ctx.request.query;
-  } else {
-    params = ctx.request.body;
+app.use(async (ctx, next) => {
+  if (ctx.request.method !== 'GET') {
+    return next();
+  }
+
+  const {
+    method,
+    id: reqId,
+  } = ctx.request.query;
+
+  let ticket;
+
+  switch (method) {
+    case 'allTickets':
+      ctx.response.body = fullToShort();
+      return null;
+
+    case 'ticketById':
+      ticket = tickets.find(
+        ({ id }) => id === +reqId,
+      );
+
+      if (!ticket) {
+        ctx.response.status = 404;
+        return null;
+      }
+
+      ctx.response.body = ticket.description;
+      return null;
+
+    default:
+      ctx.response.status = 400;
+      return null;
+  }
+});
+
+app.use(async (ctx, next) => {
+  if (ctx.request.method !== 'POST') {
+    return next();
   }
 
   const {
@@ -57,38 +98,12 @@ app.use(async (ctx) => {
     name: reqName,
     description: reqDescription,
     status: reqStatus,
-  } = params;
-
-  const fullToShort = () => JSON.stringify(tickets.map(
-    ({
-      id, name, status, created,
-    }) => ({
-      id, name, status, created,
-    }),
-  ));
+  } = ctx.request.body;
 
   let ticket;
   let index;
 
   switch (method) {
-    case 'allTickets':
-      ctx.response.body = fullToShort();
-      return;
-
-    case 'ticketById':
-      ticket = tickets.find(
-        ({ id }) => id === +reqId,
-      );
-
-      if (!ticket) {
-        ctx.response.body = 'Ticket Not Found';
-        ctx.response.status = 404;
-        return;
-      }
-
-      ctx.response.body = ticket.description;
-      return;
-
     case 'createTicket':
       if (!reqId) {
         tickets.push({
@@ -100,7 +115,7 @@ app.use(async (ctx) => {
         });
 
         ctx.response.body = fullToShort();
-        return;
+        return null;
       }
 
       ticket = tickets.find(
@@ -108,16 +123,15 @@ app.use(async (ctx) => {
       );
 
       if (!ticket) {
-        ctx.response.body = 'Ticket Not Found';
         ctx.response.status = 404;
-        return;
+        return null;
       }
 
       ticket.name = reqName;
       ticket.description = reqDescription;
       ticket.status = reqStatus;
       ctx.response.body = fullToShort();
-      return;
+      return null;
 
     case 'deleteTicket':
       index = tickets.findIndex(
@@ -125,19 +139,22 @@ app.use(async (ctx) => {
       );
 
       if (index < 0) {
-        ctx.response.body = 'Ticket Not Found';
         ctx.response.status = 404;
-        return;
+        return null;
       }
 
       tickets.splice(index, 1);
       ctx.response.body = fullToShort();
-      return;
+      return null;
 
     default:
-      ctx.response.body = 'Invalid Request Format';
       ctx.response.status = 400;
+      return null;
   }
+});
+
+app.use(async (ctx) => {
+  ctx.response.status = 405;
 });
 
 const port = process.env.PORT || 7070;
